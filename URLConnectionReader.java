@@ -3,6 +3,7 @@ import java.io.*;
 
 public class URLConnectionReader {
     public static void main(String[] args) throws Exception {
+	System.out.println("test");
         URL oracle = new URL("http://espn.go.com/mlb/playbyplay?gameId=320716108&full=1&inning=0");
         URLConnection yc = oracle.openConnection();
         BufferedReader in = new BufferedReader(new InputStreamReader(
