@@ -8,7 +8,7 @@ public class Pitch{
 	result = r;
 	speed = s;
     }
-    public void print()
+    public void Print()
     {
 	System.out.println(String.format("%-25s%-5d%s", type, speed, result));
     }

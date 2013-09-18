@@ -4,11 +4,15 @@ import org.jsoup.select.*;
 import java.io.*;
 
 public class Game{
+    public static String gameId;
     public static void main(String[] args){
-	Connection c = Jsoup.connect("http://mlb.mlb.com/mlb/gameday/index.jsp?gid=2013_08_08_lanmlb_slnmlb_1&mode=plays");
+	gameId = new String("2013_08_09_chnmlb_slnmlb_1");
+	Connection c = Jsoup.connect("http://mlb.mlb.com/mlb/gameday/index.jsp?gid=" + gameId + "&mode=plays");
 	try{
 	    Document d = c.get();
-	    Elements atBats = d.body().getElementsByClass("plays-atbat");
+	    Elements atBats = d.select(".plays-atbat");
+	    System.out.println(gameId);
+	    Roster home = new Roster(gameId);
 	    AtBat ab = new AtBat(atBats.get(0));
 	}
 	catch (IOException e)
