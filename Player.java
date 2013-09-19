@@ -7,12 +7,14 @@ public class Player{
 	firstName = fn;
 	lastName = ln;
     }
-    public Player(String n)
+    public Player(String n, Integer pid)
     {
 	firstName = n;
+	id = pid;
+	
     }
     public void Print()
     {
-	System.out.println(firstName + ' ' + lastName);
+	System.out.println(firstName + ' ' + lastName + ' ' + id); 
     }
 }

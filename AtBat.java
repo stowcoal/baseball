@@ -23,10 +23,10 @@ public class AtBat{
     }
     private Player GetBatter(Element ab)
     {
-	return new Player(ab.select(".plays-atbat-batter").get(0).ownText());
+	return new Player(ab.select(".plays-atbat-batter").get(0).ownText(), 1);
     }
     private Player GetPitcher(Element ab)
     {
-	return new Player(ab.select(".plays-atbat-pitcher").get(0).ownText());
+	return new Player(ab.select(".plays-atbat-pitcher").get(0).ownText(), 1);
     }
 }
