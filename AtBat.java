@@ -6,11 +6,13 @@ public class AtBat{
     private Player batter;
     private Player pitcher;
     public Result result;
-    public AtBat(Element ab)
+    public AtBat(Element ab, Roster home, Roster away)
     {
-	batter = GetBatter(ab);
-	pitcher = GetPitcher(ab);
 	result = new Result(ab.select("dt").get(0).ownText());
+	batter = away.getPlayerByName(BatterName(ab));
+	pitcher = home.getPlayerByName(PitcherName(ab));
+	batter.Print();
+	pitcher.Print();
 	Elements pitchTypes = ab.select(".plays-pitch-pitch");
 	Elements pitchSpeeds = ab.select(".plays-pitch-speed");
 	Elements pitchResults = ab.select(".plays-pitch-result");
@@ -21,12 +23,12 @@ public class AtBat{
 	    }
 	result.Print();
     }
-    private Player GetBatter(Element ab)
+    public String BatterName(Element ab)
     {
-	return new Player(ab.select(".plays-atbat-batter").get(0).ownText(), 1);
+	return ab.select(".plays-atbat-batter > strong").get(0).text();
     }
-    private Player GetPitcher(Element ab)
+    public String PitcherName(Element ab)
     {
-	return new Player(ab.select(".plays-atbat-pitcher").get(0).ownText(), 1);
+	return ab.select(".plays-atbat-pitcher > strong").get(0).text();
     }
 }
