@@ -2,15 +2,16 @@ import org.jsoup.*;
 import org.jsoup.nodes.*;
 import org.jsoup.select.*;
 import java.io.*;
+import java.util.*;
 public class Roster{
-    public Player[] roster;
+    public Set<Player> roster;
     public Roster(Elements players)
     {
-	roster = new Player[25];
+	roster = new HashSet<Player>();
 	Elements playerElements = players.get(0).select("a");
 	for ( int i = 0; i < playerElements.size(); i++ ){
 	    Element e = playerElements.get(i);
-	    roster[i] = new Player(e.text(), getId(e));
+	    roster.add(new Player(e.text(), getId(e)));
 	}
     }
     private Integer getId(Element e)
@@ -20,10 +21,10 @@ public class Roster{
     public Player getPlayerByName(String name)
     {
 	String lastName = name.split(". ")[1];
-	for (int i = 0; i < 25 && roster[i] != null; i++){
+	for (Player p : roster){
 	    //System.out.println(roster[i].LastName() + "==" + lastName);
-	    if ( roster[i].LastName().equals(lastName) )
-		return roster[i];
+	    if ( p.LastName().equals(lastName) )
+		return p;
 	}
 	return null;
     }
