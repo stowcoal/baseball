@@ -8,26 +8,39 @@ public class Game{
     public static Roster home;
     public static Roster away;
     public static void main(String[] args){
-	gameId = new String("2013_09_17_slnmlb_colmlb_1");
+	WebParser wp = new WebParser();
+	if ( args.length > 0 )
+	    gameId = args[0];
+	else
+	    gameId = new String("2013_10_03_pitmlb_slnmlb_1");
 	Connection plays = Jsoup.connect("http://mlb.mlb.com/mlb/gameday/index.jsp?gid=" + gameId + "&mode=plays");
 	Connection box = Jsoup.connect("http://mlb.mlb.com/mlb/gameday/index.jsp?gid=" + gameId + "&mode=box");
 	try{
 	    Document boxScore = box.get();
-	    away = new Roster(boxScore.select("#away-team-batter"));
-	    home = new Roster(boxScore.select("#home-team-pitcher"));
+	    home = wp.ParseRoster(boxScore, "home");
+	    away = wp.ParseRoster(boxScore, "away");
 	}
 	catch (IOException e)
 	    {
 		System.err.println("Error");
+		return;
 	    }
 	try{
 	    Document playByPlay = plays.get();
-	    Elements atBats = playByPlay.select(".plays-atbat");
-	    AtBat ab = new AtBat(atBats.get(0), home, away);
+	    AtBat first = wp.ParseAtBats(playByPlay);
+	    first.Print();
+	    //GetPlayer(first.batter).Print();
 	}
 	catch (IOException e)
 	    {
 		System.err.println("Error");
+		return;
 	    }
+    }
+    private static Player GetPlayer(String name){
+	Player p = home.getPlayerByName(name);
+	if ( p == null )
+	    p = away.getPlayerByName(name);
+	return p;
     }
 }
