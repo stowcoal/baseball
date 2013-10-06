@@ -6,29 +6,51 @@ import java.util.*;
 
 public class WebParser{
     public static String gameId;
-    
-    public Roster ParseRoster(Document boxScore, String team)
+    public WebParser(String gid)
     {
-	Roster roster = new Roster();
-	Elements players = boxScore.select("#"+team +"-team-batter, #"+team+"-team-pitcher").get(0).select("a");
-	for ( int i = 0; i < players.size(); i++ ){
-	    Element e = players.get(i);
-	    roster.addPlayer(new Player(e.text(), getId(e)));
-	}
-	return roster;
+	gameId = gid;
     }
-    public AtBat ParseAtBats(Document plays)
+    public Roster ParseRoster(String team)
     {
-	Elements atBats = plays.select(".plays-atbat");
-	Element ab = atBats.get(0);
-	
-	AtBat firstAtBat = 
-	    new AtBat(BatterName(ab), 
-		      PitcherName(ab), 
-		      GetResult(ab),
-		      GetPitches(ab));
+	Connection box = Jsoup.connect("http://mlb.mlb.com/mlb/gameday/index.jsp?gid=" + gameId + "&mode=box");
+	Roster roster = new Roster();
+	try{
+	    Document boxScore = box.get();
+	    Elements players = boxScore.select("#"+team +"-team-batter, #"+team+"-team-pitcher").get(0).select("a");
+	    for ( int i = 0; i < players.size(); i++ ){
+		Element e = players.get(i);
+		roster.addPlayer(new Player(e.text(), getId(e)));
+	    }
+	    return roster;
+	}
+	catch (IOException e)
+	    {
+		System.err.println("Error");
+		return null;
+	    }
 
-	return firstAtBat;
+    }
+    public AtBats ParseAtBats()
+    {
+	Connection plays = Jsoup.connect("http://mlb.mlb.com/mlb/gameday/index.jsp?gid=" + gameId + "&mode=plays");
+	try{
+	    AtBats abs = new AtBats();
+	    Document playByPlay = plays.get();
+	    Elements atBats = playByPlay.select(".plays-atbat");
+	    for ( Element ab : atBats )
+		{
+		    abs.Add(new AtBat(BatterName(ab), 
+				      PitcherName(ab), 
+				      GetResult(ab),
+				      GetPitches(ab)));
+		}
+	    return abs;
+	}
+	catch (IOException e)
+	    {
+		System.err.println("Error");
+		return null;
+	    }
     }
     private Integer getId(Element e)
     {
