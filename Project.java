@@ -7,12 +7,14 @@ public class Project{
 	if ( args.length > 0 )
 	    gameId = args[0];
 	else
-	    gameId = new String("2013_10_03_pitmlb_slnmlb_1");
+	    gameId = new String("2014_05_04_slnmlb_chnmlb_1");
 	WebParser wp = new WebParser(gameId);
 
 	Game g = new Game(wp.ParseRoster("away"), 
 			  wp.ParseRoster("home"), 
 			  wp.ParseAtBats());
-	g.plays.PrintResults();
+	g.Play();
+	g.plays.Print();
+	//	g.plays.PrintResults();
     }
 }

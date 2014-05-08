@@ -36,14 +36,24 @@ public class WebParser{
 	try{
 	    AtBats abs = new AtBats();
 	    Document playByPlay = plays.get();
-	    Elements atBats = playByPlay.select(".plays-atbat");
+	    Elements atBats = playByPlay.select(".plays-atbat, .plays-action");
+	    Vector<Event> events = new Vector<Event>();
 	    for ( Element ab : atBats )
+	    {
+		if ( ab.hasClass("plays-action") )
 		{
+		    events.add(new Event(ab.text()));
+		}
+		else
+		{
+		    events.add(new Event(ab.select("dt").get(0).ownText()));
 		    abs.Add(new AtBat(BatterName(ab), 
 				      PitcherName(ab), 
-				      GetResult(ab),
-				      GetPitches(ab)));
+				      GetPitches(ab),
+				      new Vector<Event>(events))); //using events will clear it from memory before abs is returned -- Java sucks
+		    events.clear();
 		}
+	    }
 	    return abs;
 	}
 	catch (IOException e)
@@ -64,10 +74,6 @@ public class WebParser{
     {
 	return ab.select(".plays-atbat-pitcher > strong").get(0).text();
     }
-    private Result GetResult(Element ab)
-    {
-	return new Result(ab.select("dt").get(0).ownText());
-    }
     private Vector<Pitch> GetPitches(Element ab)
     {
 	Elements pitchTypes = ab.select(".plays-pitch-pitch");
@@ -76,10 +82,14 @@ public class WebParser{
 	Vector<Pitch> pitches = new Vector<Pitch>();
 	for(int i = 1; i < pitchTypes.size(); i++)
 	    {
-		pitches.add(new Pitch(pitchTypes.get(i).text(), Integer.valueOf(pitchSpeeds.get(i).text()), pitchResults.get(i).text()));
+		Integer pitchSpeed = 0;
+		String pitchSpeedText = pitchSpeeds.get(i).text();
+		if (pitchSpeedText != null && !pitchSpeedText.isEmpty())
+		{
+		    pitchSpeed = Integer.valueOf(pitchSpeedText);
+		}
+		pitches.add(new Pitch(pitchTypes.get(i).text(), pitchSpeed, pitchResults.get(i).text()));
 	    }
 	return pitches;
-    }
+    } 
 }
-	
-

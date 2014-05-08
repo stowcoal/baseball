@@ -3,21 +3,27 @@ import java.util.*;
 public class AtBat{
     public String batter;
     public String pitcher;
-    public Result result;
     public Vector<Pitch> pitches;
-    public AtBat(String b, String p, Result r, Vector<Pitch> ps)
+    public Vector<Event> events;
+    public AtBat(String b, String p, Vector<Pitch> ps, Vector<Event> e)
     {
 	batter = b;
 	pitcher = p;
-	result = r;
 	pitches = ps;
+	events = e;
     }
     public void Print()
     {
 	System.out.println(batter);
 	System.out.println(pitcher);
-	result.Print();
 	for (Pitch p: pitches)
+	{
 	    p.Print();
+	}
+	System.out.println(events.size());
+	for (Event e: events)
+	{
+	    e.Print();
+	}
     }
 }

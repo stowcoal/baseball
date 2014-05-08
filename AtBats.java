@@ -22,11 +22,4 @@ public class AtBats{
 		ab.Print();
 	    }
     }
-    public void PrintResults()
-    {
-	for ( AtBat ab : container )
-	    {
-		ab.result.Print();
-	    }
-    }	
 }

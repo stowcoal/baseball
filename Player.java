@@ -1,19 +1,28 @@
 public class Player{
-    private String firstName;
-    private String lastName;
-    private Integer id;
-    public Player(String fn, String ln)
+    public String firstName;
+    public String firstPart;
+    public String lastName;
+    public Integer id;
+    public Player(String n)
     {
-	firstName = fn;
-	lastName = ln;
+	if ( n.indexOf(',') == -1 )
+	{
+  	    lastName = n;
+	}
+	else {
+	    firstPart = n.split(", ")[1];
+	    lastName  = n.split(", ")[0];
+	}
     }
     public Player(String n, Integer pid)
     {
 	if ( n.indexOf(',') == -1 )
+	{
 	    lastName = n;
+	}
 	else {
-	    lastName = n.split(", ")[0];
-	    firstName = n.split(", ")[1];
+	    firstPart = n.split(", ")[1];
+	    lastName  = n.split(", ")[0];
 	}
 	id = pid;
     }
@@ -21,12 +30,12 @@ public class Player{
     {
 	System.out.println(lastName + ' ' + id); 
     }
-    public String LastName()
-    {
-	return lastName;
-    }
     public String FirstName()
     {
 	return firstName;
+    }
+    public String LastName()
+    {
+	return lastName;
     }
 }
