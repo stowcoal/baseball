@@ -11,26 +11,31 @@ public class WebParser{
     {
 	gameId = gid;
     }
-    public void ParseScoreboard(String date)
+    public WebParser()
     {
-	System.out.println(date);
+    }
+    public Vector<String> ParseScoreboard(String date)
+    {
+	Vector<String> gameIds = new Vector<String>();
 	Connection conn = Jsoup.connect("http://mlb.mlb.com/components/schedule/schedule_" + date + ".json");
 	try{
 	    Document scoreboard = conn.get();
 	    String json = scoreboard.text();
-	    String[] gameIds = json.split("game_id\": \"");
-	    for (String s : gameIds){
-		System.out.println(s.substring(0, s.indexOf("\""))
-				   .replace("/","_").replace("-", "_"));
+	    String[] a = json.split("game_id\": \"");
+	    for (String s : a){
+		if (s.indexOf("\"") > 0){
+		    gameIds.add(s.substring(0, s.indexOf("\""))
+				.replace("/","_").replace("-", "_"));
+		}
 	    }
-	    Elements scores = scoreboard.select("#gameContainer");
-	    for ( int i = 0; i < scores.size(); i++ ){
-		Element e = scores.get(i);
-		System.out.println(e.text());
+	    if (gameIds.size() > 0){ //remove the first garbage line [{
+		gameIds.remove(0);
 	    }
+	   
 	} catch  (IOException e){
 	    System.err.println("Error");
 	}
+	return gameIds;
     }
     public Roster ParseRoster(String team)
     {

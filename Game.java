@@ -6,14 +6,15 @@ public class Game{
     public Roster home;
     public Roster away;
     public AtBats plays;
-    public Game(Roster h, Roster a, AtBats p, String g)
+    public Game(String g)
     {
-	home = h;
-	away = a;
-	plays = p;
 	gameId = g;
+	WebParser wp = new WebParser(gameId);
+	home = wp.ParseRoster("home");
+	away = wp.ParseRoster("away");
+	plays = wp.ParseAtBats();
     }
-    public void Analyze(){
+    public void Analyze(Boolean writeToDatabase){
 	Integer first = 0;
 	Integer second = 0;
 	Integer third = 0;
@@ -39,8 +40,9 @@ public class Game{
 		e.after = new Situation(current);
 		if (e.equals(ab.events.lastElement()) ||
 		    e.desc.indexOf("With") == 0){
-		    System.out.println(e.desc);
-		    current.WriteToDatabase(batter, pitcher, GetAction(e.desc), gameId);
+		    if (writeToDatabase){			
+			current.WriteToDatabase(batter, pitcher, GetAction(e.desc), gameId);
+		    }
 		    e.after.ClearBases();
 		    if (e.before.first != null){
 			e.after = UpdateBase(e, e.before.first);
@@ -61,7 +63,7 @@ public class Game{
 		    else if (Third(ab.action)){
 			e.after.third = batter;
 		    }
-		    else if (Out(e.desc)){
+		    else if (Out(ab.action) && !ForceOut(e.desc)){
 			e.after.AddOuts(1);
 		    }
 		    else if (HomeRun(ab.action)){
@@ -88,9 +90,7 @@ public class Game{
 		System.out.println(home.id);
 	    }	    
 	    GetPlayer(ab.batter).Print();
-	    System.out.println(ab.batter);
 	    GetPlayer(ab.pitcher).Print();
-	    ab.events.lastElement().before.Print();
 	    System.out.println(ab.action);
 	    ab.events.lastElement().after.Print();
 	}
@@ -121,7 +121,7 @@ public class Game{
 		e.after.AddRuns(1);
 	    }
 	    else if (sub.indexOf("doubled off") > -1 || 
-		     sub.indexOf("out at") > -1 ){
+		     sub.indexOf("out at") > -1){
 		e.after.AddOuts(1);
 	    }
 	    else{
@@ -140,16 +140,22 @@ public class Game{
 	    p = away.getPlayerByName(name);
 	return p;
     }
-    public Boolean Out(String desc)
+    public Boolean Out(Action a)
     {
-	if (desc.indexOf("double play") >= 0)
-	    return true;
-	else if (desc.indexOf("triple play") >= 0)
-	    return true;
-	else if (desc.indexOf("out") >= 0)
+	if (a == Action.GROUNDOUT ||
+	    a == Action.FLYOUT    ||
+	    a == Action.LINEOUT   ||
+	    a == Action.POPOUT    ||
+	    a == Action.KSWINGING ||
+	    a == Action.KLOOKING  ||
+	    a == Action.SACRIFICE )
 	    return true;
 	else 
 	    return false;
+    }
+    public Boolean ForceOut(String desc)
+    {
+	return desc.indexOf("force out") > 0;
     }
     public Boolean First(Action a)
     {
@@ -179,6 +185,7 @@ public class Game{
 		    switch (s) {
 		    case "singles":
 			return Action.SINGLE;
+		    case "hits": //ground rule double 
 		    case "doubles":
 			return Action.DOUBLE;
 		    case "triples":

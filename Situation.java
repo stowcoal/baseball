@@ -62,7 +62,7 @@ public class Situation {
 	    ", '" + gid + "');";
 	Database db = new Database();
 	//	System.out.println(sql);
-     	db.Execute(sql);
+	//     	db.Execute(sql);
     }
     public Integer GetPlayerBase(Player p)
     {
