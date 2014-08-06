@@ -1,0 +1,35 @@
+USE baseball
+
+CREATE TABLE IF NOT EXISTS teams (
+       id int AUTO_INCREMENT,
+       name varchar(25),
+       short_name varchar(3),
+       PRIMARY KEY(id),
+       UNIQUE KEY(short_name)
+);
+
+CREATE TABLE IF NOT EXISTS players (
+       id int,
+       first_name varchar(25),
+       first_name_short varchar(3),
+       last_name varchar(25),
+       PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS events (
+       id int AUTO_INCREMENT,
+       pitcher_id int,
+       batter_id int,
+       first_id int,
+       second_id int,
+       third_id int,
+       outs int,
+       home_score int,
+       away_score int,
+       inning int,
+       result_id int,
+       hit_id int,
+       game_id varchar(30),
+       PRIMARY KEY (id)
+);
+       

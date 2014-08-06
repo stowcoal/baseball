@@ -1,27 +1,46 @@
 import java.io.*;
+import java.util.*;
 
 public class Game{
     public String gameId;
     public Roster home;
     public Roster away;
     public AtBats plays;
-    public Game(Roster h, Roster a, AtBats p)
+    public Game(Roster h, Roster a, AtBats p, String g)
     {
 	home = h;
 	away = a;
 	plays = p;
+	gameId = g;
     }
-    public void Play(){
+    public void Analyze(){
+	Integer first = 0;
+	Integer second = 0;
+	Integer third = 0;
 	Situation current = new Situation();
 	for (AtBat ab : plays.container)
 	{
 	    Player batter = GetPlayer(ab.batter);
-	    batter.Print();
+	    Player pitcher = GetPlayer(ab.pitcher);
+	    if (current.first != null)
+		first = current.first.id;
+	    else
+		first = null;
+	    if (current.second != null)
+		second = current.second.id;
+	    else
+		second = null;
+	    if (current.third != null)
+		third = current.third.id;
+	    else
+		second = null;
 	    for (Event e : ab.events){
 		e.before = new Situation(current);
 		e.after = new Situation(current);
 		if (e.equals(ab.events.lastElement()) ||
 		    e.desc.indexOf("With") == 0){
+		    System.out.println(e.desc);
+		    current.WriteToDatabase(batter, pitcher, GetAction(e.desc), gameId);
 		    e.after.ClearBases();
 		    if (e.before.first != null){
 			e.after = UpdateBase(e, e.before.first);
@@ -32,25 +51,54 @@ public class Game{
 		    if (e.before.third != null){
 			e.after = UpdateBase(e, e.before.third);
 		    }
-		    Action a = GetAction(e.desc);
-		    if (First(a)){
+		    ab.action = GetAction(e.desc);
+		    if (First(ab.action)){
 			e.after.first = batter;
 		    }
-		    else if (Second(a)){
+		    else if (Second(ab.action)){
 			e.after.second = batter;
 		    }
-		    else if (Third(a)){
+		    else if (Third(ab.action)){
 			e.after.third = batter;
 		    }
 		    else if (Out(e.desc)){
-
 			e.after.AddOuts(1);
 		    }
+		    else if (HomeRun(ab.action)){
+			e.after.AddRuns(1);
+		    }		    
 		    current = new Situation(e.after);
-		    current.Print();
 		}
 	    }
 	}
+    }
+    public void Print()
+    {
+	for (AtBat ab : plays.container){
+	    ab.Print();
+	}
+    }
+    public void PrintBoxScore()
+    {
+	for (AtBat ab : plays.container){
+	    if (ab.Top()){
+		System.out.println(away.id);
+	    }
+	    else{
+		System.out.println(home.id);
+	    }	    
+	    GetPlayer(ab.batter).Print();
+	    System.out.println(ab.batter);
+	    GetPlayer(ab.pitcher).Print();
+	    ab.events.lastElement().before.Print();
+	    System.out.println(ab.action);
+	    ab.events.lastElement().after.Print();
+	}
+    }
+    public void PrintRosters()
+    {
+	home.Print();
+	away.Print();
     }
     public Situation UpdateBase(Event e, Player p)
     {
@@ -70,7 +118,7 @@ public class Game{
 		e.after.third = p;
 	    }
 	    else if (sub.indexOf("scores") > -1){
-		e.after.AddRun(1);
+		e.after.AddRuns(1);
 	    }
 	    else if (sub.indexOf("doubled off") > -1 || 
 		     sub.indexOf("out at") > -1 ){
@@ -117,6 +165,10 @@ public class Game{
     {
 	return a == Action.TRIPLE;
     }
+    public Boolean HomeRun(Action a)
+    {
+	return a == Action.HOMERUN;
+    }
     private Action GetAction(String desc)
     {
 	String[] words = desc.split(" ");
@@ -161,6 +213,12 @@ public class Game{
 		    case "batting,": 
 			if ( desc.indexOf("caught") >= 0 )
 			    return Action.CAUGHTSTEALING;		    
+			if ( desc.indexOf("defensive") >= 0 )
+			    return Action.DEFINDIF;
+			if ( desc.indexOf("wild") >= 0 )
+			    return Action.WILDPITCH;
+			if (desc.indexOf("passed") >= 0 )
+			    return Action.PASSBALL;
 		    default:
 			return Action.UNKNOWN;
 		    }

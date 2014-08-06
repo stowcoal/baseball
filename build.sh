@@ -1,1 +1,1 @@
-javac -classpath jsoup-1.7.2.jar *.java
+javac -cp "*" *.java

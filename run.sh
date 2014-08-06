@@ -1,1 +1,1 @@
-java -cp jsoup-1.7.2.jar:. Project 2014_05_04_slnmlb_chnmlb_1
+java -cp *:. Project 2014_05_04_sfnmlb_atlmlb_1

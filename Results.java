@@ -1,0 +1,3 @@
+public enum Results{
+    SINGLE, DOUBLE, TRIPLE, HOMERUN, ERROR, OUT, SACHIT, SACFLY
+	};

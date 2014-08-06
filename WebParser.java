@@ -3,6 +3,7 @@ import org.jsoup.nodes.*;
 import org.jsoup.select.*;
 import java.io.*;
 import java.util.*;
+import com.google.gson.*;
 
 public class WebParser{
     public static String gameId;
@@ -10,17 +11,48 @@ public class WebParser{
     {
 	gameId = gid;
     }
+    public void ParseScoreboard(String date)
+    {
+	System.out.println(date);
+	Connection conn = Jsoup.connect("http://mlb.mlb.com/components/schedule/schedule_" + date + ".json");
+	try{
+	    Document scoreboard = conn.get();
+	    String json = scoreboard.text();
+	    String[] gameIds = json.split("game_id\": \"");
+	    for (String s : gameIds){
+		System.out.println(s.substring(0, s.indexOf("\""))
+				   .replace("/","_").replace("-", "_"));
+	    }
+	    Elements scores = scoreboard.select("#gameContainer");
+	    for ( int i = 0; i < scores.size(); i++ ){
+		Element e = scores.get(i);
+		System.out.println(e.text());
+	    }
+	} catch  (IOException e){
+	    System.err.println("Error");
+	}
+    }
     public Roster ParseRoster(String team)
     {
 	Connection box = Jsoup.connect("http://mlb.mlb.com/mlb/gameday/index.jsp?gid=" + gameId + "&mode=box");
 	Roster roster = new Roster();
 	try{
 	    Document boxScore = box.get();
-	    Elements players = boxScore.select("#"+team +"-team-batter, #"+team+"-team-pitcher").get(0).select("a");
+	    Elements players = boxScore.select("#"+team +"-team-batter").get(0).select("a");
 	    for ( int i = 0; i < players.size(); i++ ){
 		Element e = players.get(i);
 		roster.addPlayer(new Player(e.text(), getId(e)));
 	    }
+	    players = boxScore.select("#"+team+"-team-pitcher").get(0).select("a");
+	    for ( int i = 0; i < players.size(); i++ ){
+		Element e = players.get(i);
+		roster.addPlayer(new Player(e.text(), getId(e)));
+	    }
+
+	    String teamId = boxScore.select("tr." + team + " > th > div").text();
+	    roster.id = teamId;
+	    Database db = new Database();
+	    db.Execute("INSERT INTO teams (short_name) values ('" + teamId + "') ON DUPLICATE KEY UPDATE id = id");
 	    return roster;
 	}
 	catch (IOException e)
@@ -28,7 +60,6 @@ public class WebParser{
 		System.err.println("Error");
 		return null;
 	    }
-
     }
     public AtBats ParseAtBats()
     {
