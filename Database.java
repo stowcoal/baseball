@@ -10,11 +10,16 @@ public class Database{
     public ResultSet rs;
     public Database()
     {
-	connString = "jdbc:mysql://192.168.0.244/baseball?user=root&password=pascal";
 	try {
-	  Class.forName("com.mysql.jdbc.Driver").newInstance();
+	    BufferedReader br = new BufferedReader(new FileReader("../config.ini"));
+	    connString = br.readLine();
+	    try {
+		Class.forName("com.mysql.jdbc.Driver").newInstance();
+	    } catch (Exception ex) {
+		System.out.println("Could not register");
+	    }
 	} catch (Exception ex) {
-	    System.out.println("Could not register");
+	    System.out.println("Can't open that file, man");
 	}
 
     }
