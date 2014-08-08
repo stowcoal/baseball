@@ -21,19 +21,26 @@ public class Database{
 	} catch (Exception ex) {
 	    System.out.println("Can't open that file, man");
 	}
-
     }
     public void RunQuery(String query)
     {	
 	try {
 	    Connection conn = DriverManager.getConnection(connString);
-	    Statement stmt = conn.createStatement();
-	    rs = stmt.executeQuery(query);
+	    Statement statement = conn.createStatement();
+	    rs = statement.executeQuery(query);
+	    statement.close();
+	    conn.close();
 	} catch (SQLException ex) {
 	    System.out.println("SQLException: " + ex.getMessage());
 	    System.out.println("SQLState: " + ex.getSQLState());
 	    System.out.println("VendorError: " + ex.getErrorCode());
-	}	
+	}
+    }
+    public void CloseRS()
+    {
+	try {
+	    rs.close();
+	} catch(Exception e){}
     }
     public void PrintValues()
     {
@@ -47,8 +54,10 @@ public class Database{
     {
 	try {
 	    Connection conn = DriverManager.getConnection(connString);
-	    Statement stmt = conn.createStatement();
-	    stmt.executeUpdate(sql);
+	    Statement statement = conn.createStatement();
+	    statement.executeUpdate(sql);
+	    statement.close();
+	    conn.close();
 	} catch (SQLException ex) {
 	    System.out.println("SQLException: " + ex.getMessage());
 	    System.out.println("SQLState: " + ex.getSQLState());

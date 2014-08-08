@@ -48,6 +48,27 @@ public class Situation {
 	System.out.println(inning + " " + outs + " out home: " 
 			   + homeScore + " away: " + awayScore);
     }
+    public void PrintToFile(PrintWriter pw)
+    {
+	if (second != null)
+	    pw.println(" *");
+	else
+	    pw.println("");
+	if ( third != null)
+	    pw.print("* ");
+	else
+	    pw.print("  ");
+	if ( first != null)
+	    pw.print("*");
+	else
+	    pw.print(" ");
+	if (top)
+	    pw.print("  top ");
+	else
+	    pw.print("  bottom ");
+	pw.println(inning + " " + outs + " out home: " 
+			   + homeScore + " away: " + awayScore);
+    }
     public void WriteToDatabase(Player b, Player p, Action a, String gid)
     {
 	//	System.out.println(b.lastName);

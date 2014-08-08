@@ -14,7 +14,7 @@ public class Roster{
     {
 	list.add(p);
 	Database db = new Database();
-	db.Execute("INSERT INTO players (id, first_name_short, last_name) values (" + p.id + ", '" + p.firstPart + "', '" + p.lastName + "') ON DUPLICATE KEY UPDATE first_name_short = '" + p.firstPart + "';");
+	db.Execute("INSERT INTO players (id, first_name_short, last_name) values (" + p.id + ", '" + p.firstPart + "', '" + p.lastName.replace("'", "\\'") + "') ON DUPLICATE KEY UPDATE first_name_short = '" + p.firstPart + "';");
     }
     public int size(){
 	return list.size();

@@ -6,17 +6,14 @@ public class Project{
     public static void main(String[] args)
     {
 	WebParser wp = new WebParser();
-	Vector<String> gameIds = wp.ParseScoreboard("20141111");
+	Vector<String> gameIds = wp.ParseScoreboard("20140805");
 	for (String s : gameIds){
+	    Game g = new Game(s);
 	    System.out.println(s);
+	    g.Analyze(false);
+	    g.PrintBoxScoreToFile(s);
 	}
-	String gameId;
-	if ( args.length > 0 )
-	    gameId = args[0];
-	else
-	    gameId = new String("2014_05_04_slnmlb_chnmlb_1");
-	Game g = new Game(gameId);
-	//	g.Analyze(false);
+	//g.Analyze(false);
 	//g.PrintBoxScore();
     }
 }
