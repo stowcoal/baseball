@@ -11,9 +11,7 @@ public class Project{
 	    Game g = new Game(s);
 	    System.out.println(s);
 	    g.Analyze(false);
-	    g.PrintBoxScoreToFile(s);
+	    g.PrintBoxScoreToFile("../games/" + s);
 	}
-	//g.Analyze(false);
-	//g.PrintBoxScore();
     }
 }

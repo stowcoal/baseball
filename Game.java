@@ -197,7 +197,6 @@ public class Game{
 		     sub.indexOf(" at home") > -1
 		     ){
 		e.after.AddOuts(1);
-		System.out.println(sub);
 	    }
 	    else{
 		e.after.SetPlayerBase(p, base);
