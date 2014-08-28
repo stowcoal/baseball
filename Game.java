@@ -19,8 +19,7 @@ public class Game{
 	Integer second = 0;
 	Integer third = 0;
 	Situation current = new Situation();
-	for (AtBat ab : plays.container)
-	{
+	for (AtBat ab : plays.container){
 	    Player batter = GetPlayer(ab.batter);
 	    Player pitcher = GetPlayer(ab.pitcher);
 	    if (current.first != null)
@@ -54,23 +53,25 @@ public class Game{
 			e.after = UpdateBase(e, e.before.third);
 		    }
 		    ab.action = GetAction(e.desc);
-		    if (First(ab.action)){
-			e.after.first = batter;			
+		    if (e.before.inning == e.after.inning){
+			if (First(ab.action)){
+			    e.after.first = batter;			
+			}
+			else if (Second(ab.action)){
+			    e.after.second = batter;
+			}
+			else if (Third(ab.action)){
+			    e.after.third = batter;
+			}
+			else if (HomeRun(ab.action)){
+			    e.after.AddRuns(1);
+			}
+			else if (Out(ab.action) && !ForceOut(e.desc)){
+			    e.after.AddOuts(1);
+			}
+			e.after = AdvanceBatter(e, batter);
 		    }
-		    else if (Second(ab.action)){
-			e.after.second = batter;
-		    }
-		    else if (Third(ab.action)){
-			e.after.third = batter;
-		    }
-		    else if (Out(ab.action) && !ForceOut(e.desc)){
-			e.after.AddOuts(1);
-		    }
-		    else if (HomeRun(ab.action)){
-			e.after.AddRuns(1);
-		    }
-		    e.after = AdvanceBatter(e, batter);
-   		    current = new Situation(e.after);
+		    current = new Situation(e.after);
 		}
 	    }
 	}
@@ -80,6 +81,11 @@ public class Game{
 	for (AtBat ab : plays.container){
 	    ab.Print();
 	}
+    }
+    public Situation Final()
+    {
+	AtBat last = plays.container.lastElement();
+	return last.events.lastElement().after;
     }
     public void PrintBoxScore()
     {
@@ -176,9 +182,6 @@ public class Game{
 	    else if (sub.indexOf("to 3rd") > -1){
 		e.after.third = p;
 	    }
-	    else if (sub.indexOf("scores") > -1){
-		e.after.AddRuns(1);
-	    }
 	    else if (sub.indexOf("steals") > -1){
 		if (sub.indexOf("2nd base") > -1){
 		    e.after.second = p;
@@ -190,6 +193,9 @@ public class Game{
 		    e.after.AddRuns(1);
 		}
 	    }
+	    else if (sub.indexOf("caught stealing") > -1){
+		e.after.AddOuts(1);
+	    }
 	    else if (sub.indexOf("doubled off") > -1 || 
 		     sub.indexOf(" at 1st") > -1 ||
 		     sub.indexOf(" at 2nd") > -1 ||
@@ -197,6 +203,9 @@ public class Game{
 		     sub.indexOf(" at home") > -1
 		     ){
 		e.after.AddOuts(1);
+	    }
+	    else if (sub.indexOf("scores") > -1){
+		e.after.AddRuns(1);
 	    }
 	    else{
 		e.after.SetPlayerBase(p, base);
@@ -222,7 +231,7 @@ public class Game{
 	    a == Action.POPOUT    ||
 	    a == Action.KSWINGING ||
 	    a == Action.KLOOKING  ||
-	    a == Action.SACRIFICE )
+	    a == Action.SACRIFICE)
 	    return true;
 	else 
 	    return false;
@@ -250,17 +259,31 @@ public class Game{
     {
 	return a == Action.HOMERUN;
     }
+    private Boolean hasUpperCase(String s) {        
+	for(int i=s.length()-1; i>=0; i--) {
+	    if(Character.isUpperCase(s.charAt(i))) {
+		return true;
+	    }
+	}
+	return false;
+    }
     private Action GetAction(String desc)
     {
 	String[] words = desc.split(" ");
 	for (String s : words)
 	{
-	    if (!Character.isUpperCase(s.charAt(0)))
+	    if (!hasUpperCase(s))
 		{
 		    switch (s) {
 		    case "singles":
 			return Action.SINGLE;
-		    case "hits": //ground rule double 
+		    case "hits":
+			if (desc.indexOf("grand slam") > -1){
+			    return Action.HOMERUN;
+			}
+			else if (desc.indexOf("double") > -1){
+			    return Action.DOUBLE;
+			}
 		    case "doubles":
 			return Action.DOUBLE;
 		    case "triples":
@@ -278,6 +301,15 @@ public class Game{
 			if (desc.indexOf("force out") > -1){
 			    return Action.FIELDERSCHOICE;
 			}
+			else if (desc.indexOf("double play") > -1 &&
+				 desc.split(" out at ").length > 2){
+			    //this is kinda confusing
+			    //if there is a double play, but neither
+			    //runner that is out is the batter then
+			    //it will be recorded as a fielders choice
+			    //and we will know to let the runner be on base
+			    return Action.FIELDERSCHOICE;
+			}
 			else{
 			    return Action.GROUNDOUT;
 			}
@@ -290,31 +322,44 @@ public class Game{
 		    case "bunt": //bunt pops out
 			return Action.POPOUT;
 		    case "strikes":
-			return Action.KSWINGING;
+			if (desc.indexOf("to 1st") > -1){
+			    return Action.DROPPEDTHIRDSTRIKE;
+			}
+			else {
+			    return Action.KSWINGING;
+			}
 		    case "called":
 			return Action.KLOOKING;
 		    case "out":
 			return Action.SACRIFICE;
 		    case "reaches":
-			if (desc.indexOf("error") >= 0)
+			if (desc.indexOf("error") > -1)
 			    return Action.ERROR;
-			else if (desc.indexOf("fielder's choice") >= 0)
+			else if (desc.indexOf("fielder's choice") > -1)
 			    return Action.FIELDERSCHOICE;
+			else if (desc.indexOf("catcher interference") > -1)
+			    return Action.CATCHERINTERFERENCE;
 		    case "challenged":
-			if ( desc.indexOf(": ") >= 0 )
+		    case "reviewed":
+			if ( desc.indexOf(": ") > -1 )
 			    return GetAction(desc.split(": ")[1]);
-		    case "batting,": 
-			if ( desc.indexOf("caught") >= 0 )
+		    case "batting,":
+			if ( desc.indexOf("steals") > -1 )
+			    return Action.STEAL;
+			if ( desc.indexOf("caught") > -1 )
 			    return Action.CAUGHTSTEALING;		    
-			if ( desc.indexOf("defensive") >= 0 )
+			if ( desc.indexOf("defensive") > -1 )
 			    return Action.DEFINDIF;
-			if ( desc.indexOf("wild") >= 0 )
+			if ( desc.indexOf("wild") > -1 )
 			    return Action.WILDPITCH;
-			if (desc.indexOf("passed") >= 0 )
+			if (desc.indexOf("passed") > -1 )
 			    return Action.PASSBALL;
-			if (desc.indexOf("picks off") >= 0 )
+			if (desc.indexOf("picks off") > -1)
 			    return Action.PICKOFF;
+			if (desc.indexOf("balk") > -1)
+			    return Action.BALK;
 		    default:
+			System.out.println(desc);
 			return Action.UNKNOWN;
 		    }
 		}   

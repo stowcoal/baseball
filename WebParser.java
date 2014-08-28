@@ -58,21 +58,23 @@ public class WebParser{
 	    roster.id = teamId;
 	    Database db = new Database();
 	    db.Execute("INSERT INTO teams (short_name) values ('" + teamId + "') ON DUPLICATE KEY UPDATE id = id");
-	    return roster;
+	    roster.finalScore = Integer.parseInt( boxScore.select("." + team + " > .runs").get(0).text());
 	}
-	catch (IOException e)
-	    {
-		System.err.println("Error");
-		return null;
-	    }
+	catch (IOException e){
+	    System.err.println("Error");
+	}
+	return roster;
     }
     public AtBats ParseAtBats()
     {
 	Connection plays = Jsoup.connect("http://mlb.mlb.com/mlb/gameday/index.jsp?gid=" + gameId + "&mode=plays");
+	AtBats abs = new AtBats();
 	try{
-	    AtBats abs = new AtBats();
 	    Document playByPlay = plays.get();
+
+	    Integer awayFinal = Integer.parseInt( playByPlay.select(".away > .runs").get(0).text());
 	    Elements atBats = playByPlay.select(".plays-atbat, .plays-action");
+
 	    Vector<Event> events = new Vector<Event>();
 	    for ( Element ab : atBats )
 	    {
@@ -90,13 +92,11 @@ public class WebParser{
 		    events.clear();
 		}
 	    }
-	    return abs;
 	}
-	catch (IOException e)
-	    {
-		System.err.println("Error");
-		return null;
-	    }
+	catch (IOException e){
+	    System.err.println("Error");
+	}
+	return abs;
     }
     private Integer getId(Element e)
     {

@@ -6,6 +6,7 @@ import java.util.*;
 public class Roster{
     public Set<Player> list;
     public String id;
+    public int finalScore;
     public Roster()
     {
 	list = new HashSet<Player>();
