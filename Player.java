@@ -3,6 +3,12 @@ public class Player{
     public String firstPart;
     public String lastName;
     public Integer id;
+    public Player()
+    {
+	firstPart = "";
+	firstName = "";
+	lastName  = "";
+    }
     public Player(String n)
     {
 	firstPart = "";

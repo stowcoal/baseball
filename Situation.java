@@ -69,22 +69,6 @@ public class Situation {
 	pw.println(inning + " " + outs + " out home: " 
 			   + homeScore + " away: " + awayScore);
     }
-    public void WriteToDatabase(Player b, Player p, Action a, String gid)
-    {
-	//	System.out.println(b.lastName);
-	String sql = "INSERT INTO events " +
-	    "(pitcher_id, batter_id, first_id, second_id, third_id, outs, " +
-	    "home_score, away_score, inning, result_id, hit_id, game_id) values " +
-	    "("  + String.valueOf(p.id) + ", " + String.valueOf(b.id) +
-	    ", " + String.valueOf(FirstId()) + ", " + String.valueOf(SecondId()) +
-	    ", " + String.valueOf(ThirdId()) + ", " + String.valueOf(outs) + 
-	    ", " + String.valueOf(homeScore) + ", " + String.valueOf(awayScore) +
-	    ", " + String.valueOf(inning) + ", " + a.ordinal() + ", 0" + 
-	    ", '" + gid + "');";
-	Database db = new Database();
-	//	System.out.println(sql);
-	//     	db.Execute(sql);
-    }
     public Integer GetPlayerBase(Player p)
     {
 	if (first != null && first.id.equals(p.id))

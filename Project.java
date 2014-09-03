@@ -21,6 +21,6 @@ public class Project{
 	    if (g.Final().awayScore != g.away.finalScore){
 		System.out.println("Incorrect away score");
 	    }
-	}
+	    //}
     }
 }

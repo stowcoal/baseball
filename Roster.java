@@ -22,11 +22,14 @@ public class Roster{
     }
     public Player getPlayerByName(String name)
     {
-	String lastName = name.substring(name.indexOf('.') + 2 );
+	String lastName = "";
+	lastName = name.substring(name.lastIndexOf(' ') + 1 );
 	for (Player p : list){
-	    if ( p.LastName().equals(lastName) )
+	    if ( p.LastName().equals(lastName) ){
 		return p;
+	    }
 	}
+
 	return null;
     }
     public void Print()

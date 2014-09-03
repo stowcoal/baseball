@@ -39,9 +39,6 @@ public class Game{
 		e.after = new Situation(current);
 		if (e.equals(ab.events.lastElement()) ||
 		    e.desc.indexOf("With") == 0){
-		    if (writeToDatabase){		
-			current.WriteToDatabase(batter, pitcher, GetAction(e.desc), gameId);
-		    }
 		    e.after.ClearBases();
 		    if (e.before.first != null){
 			e.after = UpdateBase(e, e.before.first);
@@ -71,10 +68,38 @@ public class Game{
 			}
 			e.after = AdvanceBatter(e, batter);
 		    }
-		    current = new Situation(e.after);
+		    if (writeToDatabase){		
+			e.WriteToDatabase(batter, pitcher, GetAction(e.desc), gameId);
+		    }
+			}
+		else if(e.desc.indexOf("Pinch-runner") > 0){
+		    e.after = PinchRunner(e);
 		}
+		current = new Situation(e.after);
+			
 	    }
 	}
+    }
+    public Situation PinchRunner(Event e){
+	// ...Pinch-runner first last replaces first last.
+	int start, end;
+	Player pr = new Player();
+	Player r = new Player();
+	start = e.desc.indexOf(" Pinch-runner ") + 14;
+	end   = e.desc.indexOf(" replaces ");
+	if (start > -1 && end > start){
+	    pr = GetPlayer(e.desc.substring(start, end));
+	}
+	start = e.desc.indexOf(" replaces ") + 10;
+	end   = e.desc.indexOf(".");
+	if (start > -1 && end > start){
+	    r = GetPlayer(e.desc.substring(start, end));
+	}
+	if (pr.id != null && r.id != null){
+	    e.after.SetPlayerBase(pr, e.after.GetPlayerBase(r));
+	}
+	
+	return e.after;
     }
     public void Print()
     {
