@@ -8,6 +8,8 @@ import java.sql.SQLException;
 public class Database{
     public String connString;
     public ResultSet rs;
+    public Statement statement;
+    public Connection conn;
     public Database()
     {
 	try {
@@ -25,22 +27,42 @@ public class Database{
     public void RunQuery(String query)
     {	
 	try {
-	    Connection conn = DriverManager.getConnection(connString);
-	    Statement statement = conn.createStatement();
+	    conn = DriverManager.getConnection(connString);
+	    statement = conn.createStatement();
 	    rs = statement.executeQuery(query);
-	    statement.close();
-	    conn.close();
 	} catch (SQLException ex) {
 	    System.out.println("SQLException: " + ex.getMessage());
 	    System.out.println("SQLState: " + ex.getSQLState());
 	    System.out.println("VendorError: " + ex.getErrorCode());
 	}
     }
-    public void CloseRS()
+    public void Next()
+    {
+	try {
+	    rs.next();
+	} catch(Exception e){
+	    System.out.println(e);
+	}
+    }
+    public void Close()
     {
 	try {
 	    rs.close();
-	} catch(Exception e){}
+	    statement.close();
+	    conn.close();
+	} catch(Exception e){
+	    System.out.println(e);
+	}
+    }
+    public String GetValue(String column)
+    {
+	String s = "";
+	try {
+	    s = rs.getString(column);
+	} catch (Exception e) {
+	    System.out.println(e);
+	}
+	return s;
     }
     public void PrintValues()
     {
@@ -53,8 +75,8 @@ public class Database{
     public void Execute(String sql)
     {
 	try {
-	    Connection conn = DriverManager.getConnection(connString);
-	    Statement statement = conn.createStatement();
+	    conn = DriverManager.getConnection(connString);
+	    statement = conn.createStatement();
 	    statement.executeUpdate(sql);
 	    statement.close();
 	    conn.close();
@@ -62,6 +84,6 @@ public class Database{
 	    System.out.println("SQLException: " + ex.getMessage());
 	    System.out.println("SQLState: " + ex.getSQLState());
 	    System.out.println("VendorError: " + ex.getErrorCode());
-	    }
+	}
     }
 }

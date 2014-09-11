@@ -122,6 +122,8 @@ public class Situation {
     public void AddOuts(int o)
     {
 	outs = outs + o;
+    }
+    public void NewInning(){
 	if ( outs == 3 ){
 	    outs = 0;
 	    ClearBases();

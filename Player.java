@@ -50,4 +50,15 @@ public class Player{
     {
 	return lastName;
     }
+    public String FullName()
+    {
+	String s = "";
+	if (firstName != null && lastName != null){
+	    s =  firstName + ' ' + lastName;
+	}
+	else if (lastName != null){
+	    s =  lastName;
+	}
+	return s;
+    }
 }

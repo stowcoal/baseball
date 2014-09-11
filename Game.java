@@ -15,25 +15,10 @@ public class Game{
 	plays = wp.ParseAtBats();
     }
     public void Analyze(Boolean writeToDatabase){
-	Integer first = 0;
-	Integer second = 0;
-	Integer third = 0;
 	Situation current = new Situation();
 	for (AtBat ab : plays.container){
 	    Player batter = GetPlayer(ab.batter);
 	    Player pitcher = GetPlayer(ab.pitcher);
-	    if (current.first != null)
-		first = current.first.id;
-	    else
-		first = null;
-	    if (current.second != null)
-		second = current.second.id;
-	    else
-		second = null;
-	    if (current.third != null)
-		third = current.third.id;
-	    else
-		second = null;
 	    for (Event e : ab.events){
 		e.before = new Situation(current);
 		e.after = new Situation(current);
@@ -50,33 +35,33 @@ public class Game{
 			e.after = UpdateBase(e, e.before.third);
 		    }
 		    ab.action = GetAction(e.desc);
-		    if (e.before.inning == e.after.inning){
-			if (First(ab.action)){
-			    e.after.first = batter;			
-			}
-			else if (Second(ab.action)){
-			    e.after.second = batter;
-			}
-			else if (Third(ab.action)){
-			    e.after.third = batter;
-			}
-			else if (HomeRun(ab.action)){
-			    e.after.AddRuns(1);
-			}
-			else if (Out(ab.action) && !ForceOut(e.desc)){
-			    e.after.AddOuts(1);
-			}
-			e.after = AdvanceBatter(e, batter);
+		    if (First(ab.action)){
+			e.after.first = batter;			
 		    }
+		    else if (Second(ab.action)){
+			e.after.second = batter;
+		    }
+		    else if (Third(ab.action)){
+			e.after.third = batter;
+		    }
+		    else if (HomeRun(ab.action)){
+			e.after.AddRuns(1);
+		    }
+		    else if (Out(ab.action) && !ForceOut(e.desc)){
+			e.after.AddOuts(1);
+		    }
+		    e.after = AdvanceBatter(e, batter);
 		    if (writeToDatabase){		
 			e.WriteToDatabase(batter, pitcher, GetAction(e.desc), gameId);
 		    }
-			}
+		    if (e.after.outs == 3){
+			e.after.NewInning();
+		    }
+		}
 		else if(e.desc.indexOf("Pinch-runner") > 0){
 		    e.after = PinchRunner(e);
 		}
-		current = new Situation(e.after);
-			
+		current = new Situation(e.after);			
 	    }
 	}
     }
@@ -131,7 +116,6 @@ public class Game{
     {
 	try {
 	    PrintWriter pw = new PrintWriter(filename, "UTF-8");
-
 	    for (AtBat ab : plays.container){
 		if (ab.Top()){
 		    pw.println(away.id);
@@ -139,17 +123,27 @@ public class Game{
 		else{
 		    pw.println(home.id);
 		}
-		pw.println(GetPlayer(ab.batter).LastName());
-		pw.println(GetPlayer(ab.pitcher).LastName());
+		Player batter = GetPlayer(ab.batter);
+		if (batter == null){
+		    System.out.println(ab.batter);
+		}
+
+		Player pitcher = GetPlayer(ab.pitcher);
+
+		if (pitcher == null){
+		    System.out.println(ab.pitcher);
+		}
+		pw.println(batter.FullName());
+		pw.println(pitcher.FullName());
 		pw.println(ab.action);
 		for (Event e : ab.events) {
 		    if (e.equals(ab.events.lastElement()) ||
-		    e.desc.indexOf("With") == 0){			
+			e.desc.indexOf("With") == 0){			
 			pw.println(e.desc);
 			e.after.PrintToFile(pw);
 		    }
 		}
-	    }
+	    }	    
 	    pw.close();
 	} catch (Exception e) {
 	    System.out.println(e);
@@ -163,8 +157,12 @@ public class Game{
     }
     public Situation AdvanceBatter(Event e, Player p)
     {
-	int start = e.desc.indexOf(p.lastName, (e.desc.indexOf(p.lastName) + 1));
-	int end   = e.desc.indexOf(".", start);
+	int start = 0;
+	int end = 0;
+	if (p != null){
+	    start = e.desc.indexOf(p.FullName(), (e.desc.indexOf(p.FullName()) + 1));
+	    end   = e.desc.indexOf(".", start);
+	}
 	if (start > 0 && end > start){
 	    String sub = e.desc.substring(start, end);
 	    e.after.ClearBase(e.after.GetPlayerBase(p));
@@ -190,12 +188,12 @@ public class Game{
     {
 	Integer base = e.before.GetPlayerBase(p);
 	String sub = "";
-	int startSub = e.desc.indexOf(p.LastName() + " advances");
+	int startSub = e.desc.indexOf(p.FullName() + " advances");
 	if (startSub == -1){
-	    startSub = e.desc.indexOf(p.LastName()); 
+	    startSub = e.desc.indexOf(p.FullName()); 
 	}
 
-	int endSub   = e.desc.indexOf(".", startSub);
+	int endSub   = e.desc.indexOf(".", startSub + p.FullName().length());
 	if (startSub > 0 && endSub > startSub){
 	    sub = e.desc.substring(startSub, endSub);
 	    if (sub.indexOf("to 1st") > -1){
@@ -309,6 +307,9 @@ public class Game{
 			else if (desc.indexOf("double") > -1){
 			    return Action.DOUBLE;
 			}
+			else if (desc.indexOf("sacrifice") > -1){
+			    return Action.SACFC;
+			}
 		    case "doubles":
 			return Action.DOUBLE;
 		    case "triples":
@@ -383,6 +384,8 @@ public class Game{
 			    return Action.PICKOFF;
 			if (desc.indexOf("balk") > -1)
 			    return Action.BALK;
+			if (desc.indexOf("throwing error") > -1)
+			    return Action.ERROR;
 		    default:
 			System.out.println(desc);
 			return Action.UNKNOWN;

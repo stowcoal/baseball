@@ -33,7 +33,7 @@ public class WebParser{
 	    }
 	   
 	} catch  (IOException e){
-	    System.err.println("Error");
+	    System.err.println(e);
 	}
 	return gameIds;
     }
@@ -61,9 +61,28 @@ public class WebParser{
 	    roster.finalScore = Integer.parseInt( boxScore.select("." + team + " > .runs").get(0).text());
 	}
 	catch (IOException e){
-	    System.err.println("Error");
+	    System.err.println(e);
 	}
 	return roster;
+    }
+    public Player ParsePlayer(Player p)
+    {
+	Connection player = Jsoup.connect("http://mlb.mlb.com/team/player.jsp?player_id=" + p.id);
+	try{
+	    Document playerInfo = player.get();
+	    Elements name = playerInfo.select("#player_name");
+	    if (name.size() > 0){
+		String n = name.get(0).text();
+		Integer end = n.indexOf(p.lastName);
+		if (end > -1){
+		    p.firstName = n.substring(0, n.indexOf(p.lastName) - 1);
+		}
+	    }
+	}
+	catch (IOException e){
+	    System.err.println(e);
+	}
+	return p;
     }
     public AtBats ParseAtBats()
     {
@@ -84,7 +103,13 @@ public class WebParser{
 		}
 		else
 		{
-		    events.add(new Event(ab.select("dt").get(0).ownText()));
+		    String desc = ab.select("dt").get(0).ownText();
+		    if (events.size() > 0){
+			if(events.lastElement().desc.equals(desc)){
+			    events.remove(events.size() - 1);
+			}
+		    }
+		    events.add(new Event(desc));
 		    abs.Add(new AtBat(BatterName(ab), 
 				      PitcherName(ab), 
 				      GetPitches(ab),
@@ -94,7 +119,7 @@ public class WebParser{
 	    }
 	}
 	catch (IOException e){
-	    System.err.println("Error");
+	    System.err.println(e);
 	}
 	return abs;
     }
