@@ -17,13 +17,18 @@ public class Game{
     public void Analyze(Boolean writeToDatabase){
 	Situation current = new Situation();
 	for (AtBat ab : plays.container){
-	    Player batter = GetPlayer(ab.batter);
-	    Player pitcher = GetPlayer(ab.pitcher);
+	    Player batter = GetBatter(ab.batter, current.top);
+	    Player pitcher = GetPitcher(ab.pitcher, current.top);
+	    if (batter == null || pitcher == null){
+		System.out.println("Error: player in wrong inning");
+		current.Print();
+	    }
 	    for (Event e : ab.events){
 		e.before = new Situation(current);
 		e.after = new Situation(current);
 		if (e.equals(ab.events.lastElement()) ||
-		    e.desc.indexOf("With") == 0){
+		    e.desc.indexOf("With") == 0 ||
+		    e.desc.indexOf("challenged") > -1){
 		    e.after.ClearBases();
 		    if (e.before.first != null){
 			e.after = UpdateBase(e, e.before.first);
@@ -188,21 +193,36 @@ public class Game{
     {
 	Integer base = e.before.GetPlayerBase(p);
 	String sub = "";
-	int startSub = e.desc.indexOf(p.FullName() + " advances");
+	String name = p.FullName();
+	int startSub = e.desc.indexOf(name + " advances");
 	if (startSub == -1){
-	    startSub = e.desc.indexOf(p.FullName()); 
+	    startSub = e.desc.indexOf(name); 
+	}
+	if (startSub == -1 && p.FirstName().charAt(1) == '.'){ //so sometimes MLB makes someone with a name like j.j. hardy as j. hardy, which is gay, but whatever
+	    name = p.FirstName().charAt(0) + ". " + p.LastName();
+	    startSub = e.desc.indexOf(name);
+	}
+	if (startSub == -1){
+	    name = p.LastName();
+	    startSub = e.desc.indexOf(name);
 	}
 
-	int endSub   = e.desc.indexOf(".", startSub + p.FullName().length());
+	int endSub = e.desc.indexOf(".", startSub + name.length());
+	int comma  = e.desc.indexOf(",", startSub + name.length());
+
+	if (comma > -1 && comma < endSub){
+	    endSub = comma;
+	}
+
 	if (startSub > 0 && endSub > startSub){
 	    sub = e.desc.substring(startSub, endSub);
-	    if (sub.indexOf("to 1st") > -1){
+	    if (sub.indexOf("to 1st") > 1){
 		e.after.first = p;
 	    }
-	    else if (sub.indexOf("to 2nd") > -1){
+	    else if (sub.indexOf("to 2nd") > 1){
 		e.after.second = p;
 	    }
-	    else if (sub.indexOf("to 3rd") > -1){
+	    else if (sub.indexOf("to 3rd") > 1){
 		e.after.third = p;
 	    }
 	    else if (sub.indexOf("steals") > -1){
@@ -246,6 +266,26 @@ public class Game{
 	    p = away.getPlayerByName(name);
 	return p;
     }
+    private Player GetBatter(String name, Boolean top){
+	Player p;
+	if (top) {
+	    p = away.getPlayerByName(name);
+	}
+	else {
+	    p = home.getPlayerByName(name);
+	}
+    	return p;
+    }
+    private Player GetPitcher(String name, Boolean top){
+	Player p;
+	if (top){
+	    p = home.getPlayerByName(name);
+	}
+	else {
+	    p = away.getPlayerByName(name);
+	}
+	return p;
+    }	
     public Boolean Out(Action a)
     {
 	if (a == Action.GROUNDOUT ||

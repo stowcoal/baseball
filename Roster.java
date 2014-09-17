@@ -15,19 +15,22 @@ public class Roster{
     public void addPlayer(Player p)
     {
 	Database db = new Database();
+	String firstName = "";
 	db.RunQuery("SELECT first_name FROM players WHERE id = " + p.id);
-	db.Next();
-	String firstName = db.GetValue("first_name");
+	if(db.Next()){
+	    firstName = db.GetValue("first_name");
+	}
 	db.Close();
-	if (firstName == null){
+	if (firstName == null || firstName.equals("")){
 	    WebParser wp = new WebParser();
 	    p = wp.ParsePlayer(p);
 	}
 	else {
 	    p.firstName = firstName;
 	}
-	if (firstName == "" || firstName == null){
-	    System.out.println("** WARNING MISSING FIRST NAME **");
+	if (p.firstName == null || p.firstName.equals("")){
+	    System.out.println("** WARNING MISSING FIRST NAME: " + 
+			       p.LastName() + " " + p.id + " **");
 	}
 	list.add(p);
 	String sql = "INSERT INTO players (id, first_name, last_name) values (" + p.id + ", '" + p.firstName.replace("'", "\\'") + "', '" + p.lastName.replace("'", "\\'") + "') ON DUPLICATE KEY UPDATE first_name = '" + p.firstName + "', last_name = '" + p.lastName.replace("'", "\\'") + "';";

@@ -6,7 +6,7 @@ public class Project{
     public static void main(String[] args)
     {
 	WebParser wp = new WebParser();
-	Vector<String> gameIds = wp.ParseScoreboard("20140808");
+	Vector<String> gameIds = wp.ParseScoreboard("20140810");
 	for (String s : gameIds){
 	    //check if game is in database
 	    //if it is, don't run it

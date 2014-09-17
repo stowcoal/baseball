@@ -67,7 +67,7 @@ public class WebParser{
     }
     public Player ParsePlayer(Player p)
     {
-	Connection player = Jsoup.connect("http://mlb.mlb.com/team/player.jsp?player_id=" + p.id);
+	Connection player = Jsoup.connect("http://mlb.mlb.com/team/player.jsp?player_id=" + p.id + "#gameType='R'");
 	try{
 	    Document playerInfo = player.get();
 	    Elements name = playerInfo.select("#player_name");

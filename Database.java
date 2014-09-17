@@ -36,13 +36,15 @@ public class Database{
 	    System.out.println("VendorError: " + ex.getErrorCode());
 	}
     }
-    public void Next()
-    {
+    public boolean Next()
+    {	
+	boolean more = false;
 	try {
-	    rs.next();
+	    more = rs.next();
 	} catch(Exception e){
 	    System.out.println(e);
 	}
+	return more;
     }
     public void Close()
     {
